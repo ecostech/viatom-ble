@@ -1,0 +1,14 @@
+[Unit]
+Description=Viatom BLE Monitor Service
+After=syslog.target network-online.target bluetooth.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python /home/pi/viatom-ble.py
+Restart=always
+RestartSec=5
+KillMode=process
+
+[Install]
+WantedBy=multi-user.target
+
