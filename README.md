@@ -1,7 +1,7 @@
 # viatom-ble
-Python script to read sensor values over BLE from Viatom ring oxygen (SpO2) monitors.
+Python script to read sensor values over BLE from Viatom wearable ring oxygen (SpO2) monitors.
 
-Reads values once every 2 second and logs to console or log file. Also publishes values to an MQTT broker if configured.
+Reads values once every 2 second and logs to console or log file. Also publishes values to an MQTT broker if so configured.
 
 ## Compatability
 Tested against a Viatom model PO3 (Wellue KidsO2) during development.
@@ -16,9 +16,9 @@ sudo pip install blueply
 sudo pip install paho-mqtt
 ```
 
-Scan devices while wearing the device to determine it's BLE address.
+Scan while wearing the device to determine it's BLE address.
 
-*Note: Be sure the device is not connected to any other monitor (ie the mobile app) before scanning.*
+*Note: Ensure the device is not connected to any other monitor (ie the mobile app) before scanning.*
 
 ```
 sudo python viatom-ble.py -s
@@ -32,7 +32,7 @@ Optionally also configure the MQTT client by enering values for the `mqtt_*` var
 
 Test BLE connectivity while wearing the device.
 
-*Note: Warnings and exceptions from the MQTT client can be ignored if it has not been confgured yet.
+*Note: Warnings and exceptions from the MQTT client can be ignored if it has not been confgured yet.*
 
 ```
 python viatom-ble.py -v -c

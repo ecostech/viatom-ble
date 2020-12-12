@@ -101,7 +101,7 @@ if __name__ == "__main__":
 
     # ble config params
     # ble address of device
-    ble_address = ""
+    ble_address = "f3:ce:82:50:0c:a5"
     ble_type = btle.ADDR_TYPE_RANDOM
     # seconds to wait between reads
     ble_read_period = 2
@@ -246,9 +246,25 @@ if __name__ == "__main__":
         except IOError as e:
             logger.error("IOError: " + str(e))
 
-        logger.info("BLE: Waiting " + str(ble_next_reconnect_delay) + " seconds to reconnect...")
-        time.sleep(ble_next_reconnect_delay);
-        ble_next_reconnect_delay = ble_reconnect_delay
+        except KeyboardInterrupt:
+            logger.info("KeyboardInterrupt, exiting")
+            sys.exit()
+
+        except:
+            e = sys.exc_info()[0]
+            logger.error("Exception: " + str(e))
+
+        try:
+            logger.info("BLE: Waiting " + str(ble_next_reconnect_delay) + " seconds to reconnect...")
+            time.sleep(ble_next_reconnect_delay);
+            ble_next_reconnect_delay = ble_reconnect_delay
+        except KeyboardInterrupt:
+            logger.info("KeyboardInterrupt, exiting")
+            sys.exit()
+        except:
+            e = sys.exc_info()[0]
+            logger.error("Exception: " + str(e))
+
 
     logger.info("Exiting...")
     client.loop_stop()
