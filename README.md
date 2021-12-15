@@ -12,7 +12,7 @@ Should be compatible with all Viatom ring oxygen monitors inluding models PO1, P
 Install BluePy for BLE and Paho for MQTT client
 
 ```
-sudo pip install blueply
+sudo pip install bluepy
 sudo pip install paho-mqtt
 ```
 
@@ -32,7 +32,7 @@ Optionally also configure the MQTT client by enering values for the `mqtt_*` var
 
 Test BLE connectivity while wearing the device.
 
-*Note: Warnings and exceptions from the MQTT client can be ignored if it has not been confgured yet.*
+*Note: Warnings and exceptions from the MQTT client can be ignored if it has not been configured.*
 
 ```
 python viatom-ble.py -v -c
