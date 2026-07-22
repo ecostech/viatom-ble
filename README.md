@@ -9,6 +9,13 @@ Tested against a Viatom model PO3 (Wellue KidsO2) during development.
 Should be compatible with all Viatom ring oxygen monitors inluding models PO1, PO2 (Wellue O2Ring), PO3, PO4 and PO1B.
 
 ## Setup
+Install GLib required by BluePy
+
+```
+sudo apt update
+sudo apt install libglib2.0-dev
+```
+
 Install BluePy for BLE and Paho for MQTT client
 
 ```
