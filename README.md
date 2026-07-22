@@ -15,8 +15,14 @@ Cross-platform Python tool and library to read sensor values over BLE from Viato
 ```bash
 git clone https://github.com/ecostech/viatom-ble.git
 cd viatom-ble
+python3 -m venv .venv
+source .venv/bin/activate
 pip install .
 ```
+
+The `viatom-ble` console script is placed on the venv's `PATH` by pip. With the venv activated you can run `viatom-ble …` from any directory; when it isn't activated, invoke it directly as `/path/to/viatom-ble/.venv/bin/viatom-ble …`.
+
+The venv step is what most modern distributions (Raspberry Pi OS Bookworm, Debian 12, recent Homebrew) require — a bare `pip install .` will fail with `error: externally-managed-environment` (PEP 668). If you know your environment allows system-wide pip installs, you can skip `python3 -m venv .venv` and the `source` line, or add `--break-system-packages` / `--user` to the `pip install` invocation — but the venv is the recommended path for both standalone use and embedding.
 
 For development (editable install with test dependencies):
 
@@ -26,7 +32,17 @@ source .venv/bin/activate
 pip install -e '.[dev]'
 ```
 
-The `viatom-ble` console script is placed on your `PATH` by pip.
+### Embedding as a library
+
+If you're calling `viatom_ble` from your own Python application, use the same pattern: create a venv for **your** app and `pip install /path/to/viatom-ble` (or a git URL) inside it. Do not try to install into the system Python.
+
+```bash
+cd my-app
+python3 -m venv .venv
+source .venv/bin/activate
+pip install /path/to/viatom-ble
+# or: pip install git+https://github.com/ecostech/viatom-ble.git
+```
 
 ### Raspberry Pi one-time setup
 

@@ -12,6 +12,8 @@ from bleak import BleakScanner
 from bleak.backends.device import BLEDevice
 from bleak.backends.scanner import AdvertisementData
 
+from .protocol import SERVICE_UUID
+
 _LOG = logging.getLogger(__name__)
 
 # Case-insensitive substrings that match Viatom / Wellue family device names.
@@ -37,6 +39,19 @@ def _is_compatible(name: str | None) -> bool:
     return any(prefix in lower for prefix in COMPATIBLE_NAME_PREFIXES)
 
 
+def _matches_viatom(name: str | None, adv: AdvertisementData) -> bool:
+    """True if the advertisement looks like a Viatom-family device.
+
+    Matches on either the local name (family prefix) or the Viatom service
+    UUID in the advertisement -- some rings drop the name from ads after
+    being connected once, but the service UUID stays.
+    """
+    if _is_compatible(name):
+        return True
+    service_uuids = adv.service_uuids or ()
+    return any(u.lower() == SERVICE_UUID.lower() for u in service_uuids)
+
+
 async def scan_devices(
     duration: float = 10.0,
     name_filter: bool = True,
@@ -55,7 +70,7 @@ async def scan_devices(
         entries = [
             (dev, adv)
             for dev, adv in entries
-            if _is_compatible(adv.local_name or dev.name)
+            if _matches_viatom(adv.local_name or dev.name, adv)
         ]
 
     entries.sort(key=lambda item: item[1].rssi if item[1].rssi is not None else -999, reverse=True)
@@ -71,7 +86,7 @@ async def _scan_and_prompt(duration: float, name_filter: bool):
 
     def on_detect(device: BLEDevice, adv: AdvertisementData) -> None:
         name = adv.local_name or device.name
-        if name_filter and not _is_compatible(name):
+        if name_filter and not _matches_viatom(name, adv):
             return
         if device.address in seen:
             idx = seen[device.address][2]

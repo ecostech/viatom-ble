@@ -17,8 +17,9 @@ from collections.abc import Awaitable, Callable
 from datetime import datetime
 from typing import Any
 
-from bleak import BleakClient
+from bleak import BleakClient, BleakScanner
 from bleak.backends.characteristic import BleakGATTCharacteristic
+from bleak.backends.device import BLEDevice
 
 from .protocol import (
     REQUEST_BYTES,
@@ -98,6 +99,9 @@ class ViatomClient:
         self._stop_event = asyncio.Event()
         self._loop: asyncio.AbstractEventLoop | None = None
         self._last_notification_at: float | None = None
+        # Cached BLEDevice from find_device_by_address; carries the BLE address
+        # type (random vs public) that BlueZ needs to establish the connection.
+        self._device: BLEDevice | None = None
 
     async def stop(self) -> None:
         """Request that ``run_forever`` exit at the next opportunity."""
@@ -172,8 +176,23 @@ class ViatomClient:
         def _on_disconnected(_: BleakClient) -> None:
             self._log.info("BLE: peripheral disconnected")
 
+        # Resolve the address string to a BLEDevice so BlueZ knows the correct
+        # BLE address type (Viatom rings use `random`; guessing `public` hangs
+        # the connect or drops the link mid service-discovery on Raspberry Pi).
+        # Bleak officially recommends this pattern. On macOS the identifier is
+        # a CoreBluetooth UUID and the scan resolves it identically.
+        if self._device is None:
+            self._log.debug(f"BLE: resolving {self.address} via BLE scan")
+            self._device = await BleakScanner.find_device_by_address(
+                self.address, timeout=self.connect_timeout
+            )
+            if self._device is None:
+                raise RuntimeError(
+                    f"Device {self.address} not found; is it advertising and unpaired from the phone app?"
+                )
+
         client = BleakClient(
-            self.address,
+            self._device,
             disconnected_callback=_on_disconnected,
             timeout=self.connect_timeout,
         )
@@ -181,7 +200,10 @@ class ViatomClient:
         try:
             await asyncio.wait_for(client.connect(), timeout=self.connect_timeout)
         except (asyncio.TimeoutError, Exception) as e:
-            self._log.warning(f"BLE: connect failed: {e}")
+            # Invalidate the cached device so the next attempt re-scans;
+            # BlueZ can hand out stale entries after an adapter hiccup.
+            self._device = None
+            self._log.warning(f"BLE: connect failed: {type(e).__name__}: {e}")
             raise
 
         try:
