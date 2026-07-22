@@ -4,7 +4,8 @@ After=syslog.target network-online.target bluetooth.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/python /home/pi/viatom-ble.py
+ExecStart=/usr/local/bin/viatom-ble --address AA:BB:CC:11:22:33 --logfile /var/log/viatom-ble.log
+User=pi
 Restart=always
 RestartSec=5
 KillMode=process
