@@ -189,7 +189,15 @@ class ViatomClient:
             await self._notify_state(STATE_CONNECTED)
 
             write_char, notify_char = self._find_characteristics(client)
-            self._log.debug(f"BLE: write char {write_char.uuid}, notify char {notify_char.uuid}")
+
+            # Choose the write mode from the characteristic's declared properties.
+            # Some peripherals (observed on macOS/CoreBluetooth against the Wellue KidsO2)
+            # only accept write-without-response even though bluepy's `withResponse=True`
+            # worked on Linux -- BlueZ and CoreBluetooth enforce permissions differently.
+            write_with_response = "write" in write_char.properties
+            if not write_with_response and "write-without-response" not in write_char.properties:
+                write_with_response = True  # shouldn't happen, but stay defensive
+            fallback_tried = False
 
             fail_count = 0
             fail_limit = max(1, int(self.inactivity_timeout / self.read_period))
@@ -211,10 +219,28 @@ class ViatomClient:
             try:
                 while not self._stop_event.is_set():
                     try:
-                        await client.write_gatt_char(write_char, REQUEST_BYTES, response=True)
+                        await client.write_gatt_char(
+                            write_char, REQUEST_BYTES, response=write_with_response
+                        )
                     except Exception as e:
-                        self._log.warning(f"BLE: write failed: {e}")
-                        break
+                        if not fallback_tried:
+                            fallback_tried = True
+                            other = not write_with_response
+                            self._log.warning(
+                                f"BLE: write (response={write_with_response}) failed: {e}. "
+                                f"Retrying with response={other}."
+                            )
+                            try:
+                                await client.write_gatt_char(
+                                    write_char, REQUEST_BYTES, response=other
+                                )
+                                write_with_response = other  # stick with what works
+                            except Exception as e2:
+                                self._log.warning(f"BLE: write failed: {e2}")
+                                break
+                        else:
+                            self._log.warning(f"BLE: write failed: {e}")
+                            break
 
                     # Wait one read_period, but honor stop.
                     try:
@@ -260,6 +286,13 @@ class ViatomClient:
         if service is None:
             raise RuntimeError(f"BLE service {SERVICE_UUID} not found on device")
 
+        # Log the full characteristic table at DEBUG so `-v` gives us everything
+        # needed to diagnose device-specific quirks without another round-trip.
+        for char in service.characteristics:
+            self._log.debug(
+                f"BLE: discovered characteristic {char.uuid} properties={list(char.properties)}"
+            )
+
         write_char: BleakGATTCharacteristic | None = None
         notify_char: BleakGATTCharacteristic | None = None
         for char in service.characteristics:
@@ -286,6 +319,10 @@ class ViatomClient:
             raise RuntimeError(
                 "Could not locate both write and notify characteristics on the Viatom service"
             )
+        self._log.info(
+            f"BLE: using write char {write_char.uuid} ({list(write_char.properties)}), "
+            f"notify char {notify_char.uuid} ({list(notify_char.properties)})"
+        )
         return write_char, notify_char
 
     def _dispatch_reading(self, reading: Reading) -> None:
