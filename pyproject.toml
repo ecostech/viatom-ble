@@ -1,0 +1,59 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "viatom-ble"
+version = "0.2.0"
+description = "Read sensor values over BLE from Viatom / Wellue wearable pulse-oximeter rings."
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.9"
+authors = [{ name = "Chad Attermann" }]
+keywords = ["bluetooth", "ble", "viatom", "wellue", "spo2", "pulse-oximeter", "mqtt"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Healthcare Industry",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Home Automation",
+]
+dependencies = [
+    "bleak>=0.21",
+    "paho-mqtt>=2.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7", "pytest-asyncio>=0.21", "ruff>=0.4"]
+
+[project.scripts]
+viatom-ble = "viatom_ble.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/cattermann/viatom-ble"
+Repository = "https://github.com/cattermann/viatom-ble"
+
+[tool.setuptools.packages.find]
+include = ["viatom_ble*"]
+exclude = ["tests*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM"]
+ignore = ["E501"]
