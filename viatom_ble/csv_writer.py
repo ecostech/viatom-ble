@@ -39,14 +39,16 @@ NO_FINGER_PULSE = 65535
 
 
 def format_viatom_time(dt: datetime) -> str:
-    """Format a datetime as e.g. ``10:33:40PM Jan 31, 2026``.
+    """Format a datetime as e.g. ``01:05:07PM Jan 5, 2026``.
 
-    Built manually because ``strftime`` cannot produce non-zero-padded hour
-    and day portably across Linux / macOS / Windows.
+    The vendor zero-pads the 12-hour hour but leaves the day-of-month
+    unpadded. Built manually because ``strftime`` cannot produce a
+    non-zero-padded day portably across Linux / macOS / Windows
+    (``%-d`` isn't supported on Windows).
     """
     hour_12 = dt.hour % 12 or 12
     ampm = "PM" if dt.hour >= 12 else "AM"
-    return f"{hour_12}:{dt.minute:02d}:{dt.second:02d}{ampm} {dt:%b} {dt.day}, {dt.year}"
+    return f"{hour_12:02d}:{dt.minute:02d}:{dt.second:02d}{ampm} {dt:%b} {dt.day}, {dt.year}"
 
 
 class CsvWriter:

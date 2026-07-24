@@ -27,9 +27,9 @@ def test_format_viatom_time_matches_sample():
     assert format_viatom_time(FIXED_TIME) == EXPECTED_STAMP
 
 
-def test_format_viatom_time_non_padded_hour_and_day():
+def test_format_viatom_time_padded_hour_unpadded_day():
     dt = datetime(2026, 1, 5, 13, 5, 7)
-    assert format_viatom_time(dt) == "1:05:07PM Jan 5, 2026"
+    assert format_viatom_time(dt) == "01:05:07PM Jan 5, 2026"
 
 
 def test_format_viatom_time_midnight_and_noon():
