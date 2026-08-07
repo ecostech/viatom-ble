@@ -4,7 +4,7 @@ Cross-platform Python tool and library to read sensor values over BLE from Viato
 
 ## Compatibility
 
-**Devices** — tested with a Viatom PO3 (Wellue KidsO2). Should work with all Viatom ring oximeters including PO1, PO2 (Wellue O2Ring), PO3, PO4, PO1B, and Checkme O2.
+**Devices** — tested with a Viatom PO3 (Wellue KidsO2) and a PO2 (O2Ring). Should work with all Viatom ring oximeters including PO1, PO2 (Wellue O2Ring), PO3, PO4, PO1B, and Checkme O2.
 
 **Platforms** — Linux (Raspberry Pi is the primary target), macOS, and Windows 10+. Powered by [Bleak](https://github.com/hbldh/bleak).
 
